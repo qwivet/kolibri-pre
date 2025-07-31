@@ -1,0 +1,8 @@
+a, b, op,
+. action = 
+  ; op: [+], +
+  ; op: [-], -
+  ; op: [*], *
+  ; op: [/], //
+  ; op, *
+. return = action < a < b
