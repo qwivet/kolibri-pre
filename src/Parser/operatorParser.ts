@@ -1,57 +1,47 @@
-import { Token, Expression, Association, Operator } from '../interfaces';
+import { Expression, Association, Operator } from '../interfaces';
 import { Parser } from '../interfaces';
-import { standardParserFlow } from './standardParserFlow';
 import { findLastIndex } from './findLastIndex';
+import { startParser, tokenComparer } from './utils';
 
 export const operatorParser =
   (operatorsList: Array<Operator>): ((unitsValue: Array<Expression>, parsers: Array<Parser>) => Array<Expression>) =>
-  (unitsValue: Array<Expression>, parsers: Array<Parser>) =>
-    operatorParserRaw(operatorsList, unitsValue, parsers);
+    (unitsValue: Array<Expression>, parsers: Array<Parser>) =>
+      operatorParserRaw(operatorsList, unitsValue, parsers);
 
 const operatorParserRaw = (
   operatorsList: Array<Operator>,
   unitsValue: Array<Expression>,
   parsers: Array<Parser>
 ): Array<Expression> => {
-  if (unitsValue.length === 0 || unitsValue.length === 1) return unitsValue;
   if (parsers.length !== 1) throw new Error('operatorParser accept only one parser');
+  if (unitsValue.length === 0 || unitsValue.length === 1) return unitsValue;
+  const parser = parsers[0];
   let units = unitsValue.slice();
-  const startParser = (start: number, end: number) => parsers[0](units.slice(start, end), standardParserFlow);
-  const isEqual =
-    (value: string): ((x: Expression) => boolean) =>
-    x =>
-      (x as Token) !== undefined && (x as Token).value !== undefined && (x as Token).value === value;
 
-  if (units.every(x => !operatorsList.some(op => isEqual(op[0])(x)))) return units;
+  const isActiveOp = (opList: Array<Operator>) => (x: Expression) => opList.some(op => tokenComparer(op.value)(x));
+  if (!units.some(isActiveOp(operatorsList))) return units;
 
-  let minPriority = Infinity;
-  for (const op of operatorsList) {
-    if (minPriority <= op[1]) continue;
-    if (units.some(isEqual(op[0]))) minPriority = op[1];
-  }
-  const currentOperators = operatorsList.filter(op => op[1] == minPriority).filter(op => units.some(isEqual(op[0])));
-  if (currentOperators.length === 0) return units;
-  if (currentOperators.some(op => op[2] !== currentOperators[0][2]))
-    throw new Error('u cannot use operators with same priority and association in same place');
-  const operatorsAmount = units.filter(x => currentOperators.some(op => isEqual(op[0])(x))).length;
-  if (currentOperators.some(op => isEqual(op[0])(units[0]))) {
-    if (operatorsAmount > 1) return startParser(1, units.length);
-    else return [{ applier: units[0], appliedTo: startParser(1, units.length)[0] }];
-  }
-  if (currentOperators.some(op => isEqual(op[0])(units[units.length - 1]))) return startParser(0, units.length - 1);
+  const isOpInUnits = (op: Operator) => units.some(tokenComparer(op.value));
+  const minPriority = operatorsList.reduce((acc, x) => (isOpInUnits(x) ? Math.min(x.priority, acc) : acc), Infinity);
 
-  let index: number | undefined;
-  switch (currentOperators[0][2]) {
-    case Association.RL:
-      index = units.findIndex(x => currentOperators.some(op => isEqual(op[0])(x)));
-    case Association.LR:
-      index = findLastIndex(units, x => currentOperators.some(op => isEqual(op[0])(x)));
+  const currentOperators = operatorsList.filter(op => op.priority == minPriority).filter(isOpInUnits);
+  if (currentOperators.some(op => op.association !== currentOperators[0].association))
+    throw new Error('u cannot use operators with same priority and different association in same place');
+
+  const operatorsAmount = units.filter(isActiveOp(currentOperators)).length;
+  if (isActiveOp(currentOperators)(units[0])) {
+    if (operatorsAmount > 1) return startParser(parser, units, 1, units.length);
+    else return [{ applier: units[0], appliedTo: startParser(parser, units, 1, units.length)[0] }];
   }
-  if (index === undefined) return units;
-  return [
-    {
-      applier: { applier: units[index], appliedTo: startParser(0, index)[0] },
-      appliedTo: startParser(index + 1, units.length)[0],
-    },
-  ];
+
+  if (isActiveOp(currentOperators)(units[units.length - 1])) return startParser(parser, units, 0, units.length - 1);
+
+  const firstIndex = units.findIndex(x => currentOperators.some(op => tokenComparer(op.value)(x)));
+  const lastIndex = findLastIndex(units, x => currentOperators.some(op => tokenComparer(op.value)(x)));
+  let index = currentOperators[0].association === Association.RL ? firstIndex : lastIndex;
+
+  if (index === undefined) throw new Error('how');
+  const leftPart = startParser(parser, units, 0, index)[0];
+  const rightPart = startParser(parser, units, index + 1, units.length)[0];
+  return [{ applier: { applier: units[index], appliedTo: leftPart }, appliedTo: rightPart }];
 };
