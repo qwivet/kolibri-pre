@@ -24,4 +24,4 @@ export enum Association {
   RL,
 }
 
-export type Operator = [string, number, Association];
+export type Operator = { value: string; priority: number; association: Association };

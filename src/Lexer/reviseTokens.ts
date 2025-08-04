@@ -16,7 +16,7 @@ export const reviseTokens = (tokens: Array<Token>): Array<Token> => {
         addOrConcat(TokenType.Identifier, ' ');
         break;
       case TokenType.Literal:
-        const allPoints = (last.value + token.value).split('').filter(x => x === '.').length;
+        const allPoints = (last?.value ?? "" + token.value).split('').filter(x => x === '.').length;
         if (allPoints > 1) throw new Error('Literal have several floating points');
         addOrConcat(TokenType.Literal, '');
         break;

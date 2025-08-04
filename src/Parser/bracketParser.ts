@@ -13,7 +13,7 @@ export const bracketParser = (unitsValue: Array<Expression>, parsers: Array<Pars
 
   while (units.some(tokenComparer('('))) {
     const startIndex = startIndexGen();
-    if (startIndex === undefined) throw new Error('how tf');
+    if (startIndex === undefined) throw new Error('how tf is going');
     const lenUnchecked = units.slice(startIndex + 1).findIndex(tokenComparer(')'));
     const end = lenUnchecked === -1 ? units.length : startIndex + lenUnchecked + 1;
     units = insertInto(units, startIndex, end + 1, startParser(parser, units, startIndex + 1, end));
