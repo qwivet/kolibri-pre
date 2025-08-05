@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 import { operatorParser } from './operatorParser';
 import { Expression, TokenType, Association, Operator } from '../interfaces';
-import { clamp } from '../Common';
+import { clamp } from '../common';
 
 vi.mock('..', () => ({
   insertInto: vi.fn(

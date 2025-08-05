@@ -1,7 +1,7 @@
-export { Lexer } from './Lexer/interfaces';
+export { Lexer } from './lexer/interfaces';
 
-export { Parser } from './Parser/interfaces';
+export { Parser } from './parser/interfaces';
 
-export { IKolibriFileReader, IKolibriFileFactory } from './Common/interfaces';
+export { IKolibriFileReader, IKolibriFileFactory } from './common/interfaces';
 
-export { Association, Operator, IKolibriFile, Application, Expression, TokenType, Token } from './Common/commonDataTypes';
+export { Association, Operator, IKolibriFile, Application, Expression, TokenType, Token } from './common/commonDataTypes';
