@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { bracketParser } from './bracketParser';
 import { Expression, TokenType } from '../interfaces';
 import * as utils from './utils';
-import { clamp } from '../Common/clamp';
+import { clamp } from '../common/clamp';
 
 vi.mock('..', () => ({
   insertInto: vi.fn(

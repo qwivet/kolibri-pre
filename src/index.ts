@@ -1,8 +1,8 @@
-export * from './Common';
+export * from './common';
 
-import { pipeline, tokenize, reviseTokens } from './Lexer';
-import { parse, printExpressionToStringBr, standardParserFlow } from './Parser';
-import { createKolibriFile, createKolibriFileReader } from './Common';
+import { pipeline, tokenize, reviseTokens } from './lexer';
+import { parse, printExpressionToStringBr, standardParserFlow } from './parser';
+import { createKolibriFile, createKolibriFileReader } from './common';
 
 const fileReader = createKolibriFileReader();
 const file = createKolibriFile('/home/btw/projects/kolibrits/testfiles/test2.kol', fileReader);
